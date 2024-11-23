@@ -66,47 +66,48 @@
                 document.getElementById('episodeContent').innerText = 'Failed to load episodes. Please try again later.';
             });
 
-        function parseRPY(data) {
-            const episodes = [];
-            const episodeRegex = /label episode(\d+):([\s\S]*?)(?=label episode\d+:|$)/g;
-            let match;
+      function parseRPY(data) {
+    const episodes = [];
+    const episodeRegex = /label episode(\d+):([\s\S]*?)(?=label episode\d+:|$)/g;
+    let match;
 
-            while ((match = episodeRegex.exec(data)) !== null) {
-                const episode = {
-                    episode: match[1],
-                    title: `Episode ${match[1]}`,
-                    scenes: []
-                };
+    while ((match = episodeRegex.exec(data)) !== null) {
+        const episode = {
+            episode: match[1],
+            title: `Episode ${match[1]}`,
+            scenes: []
+        };
 
-                const sceneRegex = /label (scene\d+):([\s\S]*?)(?=label scene\d+:|$)/g;
-                let sceneMatch;
+        const sceneRegex = /label (scene\d+):([\s\S]*?)(?=label scene\d+:|$)/g;
+        let sceneMatch;
 
-                             while ((sceneMatch = sceneRegex.exec(match[2])) !== null) {
-                    const scene = {
-                        id: sceneMatch[1],
-                        text: sceneMatch[2].trim(),
-                        choices: []
-                    };
+        while ((sceneMatch = sceneRegex.exec(match[2])) !== null) {
+            const scene = {
+                id: sceneMatch[1],
+                text: sceneMatch[2].trim(),
+                choices: []
+            };
 
-                    // Extract choices from the scene text
-                    const choiceRegex = /"([^"]+)":\s*jump (scene\d+)/g;
-                    let choiceMatch;
+            // Extract choices from the scene text
+            const choiceRegex = /"([^"]+)":\s*jump (scene\d+)/g;
+            let choiceMatch;
 
-                    while ((choiceMatch = choiceRegex.exec(sceneMatch[2])) !== null) {
-                        scene.choices.push({
-                            text: choiceMatch[1],
-                            nextScene: choiceMatch[2]
-                        });
-                    }
-
-                    episode.scenes.push(scene);
-                }
-
-                episodes.push(episode);
+            while ((choiceMatch = choiceRegex.exec(sceneMatch[2])) !== null) {
+                scene.choices.push({
+                    text: choiceMatch[1],
+                    nextScene: choiceMatch[2]
+                });
             }
 
-            return episodes;
+            episode.scenes.push(scene);
         }
+
+        episodes.push(episode);
+    }
+
+    return episodes;
+}
+
 
         function displayEpisodeList() {
             const episodeList = document.getElementById('episodeList');
