@@ -131,7 +131,10 @@ function parseRPY(data) {
         }
 
 function loadEpisode(episodeId) {
-    const episodeIndex = episodes.findIndex(ep => ep.title.toLowerCase() === episodeId.toLowerCase());
+    // Extract the episode number from the episodeId (e.g., "episode2" -> 2)
+    const episodeNumber = episodeId.replace('episode', '');
+    const episodeIndex = episodes.findIndex(ep => ep.episode === episodeNumber);
+
     if (episodeIndex !== -1) {
         const episode = episodes[episodeIndex];
         currentEpisodeIndex = episodeIndex; 
@@ -142,6 +145,7 @@ function loadEpisode(episodeId) {
         document.getElementById('episodeContent').innerText = 'Episode not found. Please try again later.';
     }
 }
+
 
 
 function displayScene(episode, sceneId) {
