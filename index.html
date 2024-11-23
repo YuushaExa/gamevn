@@ -130,40 +130,59 @@ function parseRPY(data) {
             });
         }
 
-        function loadEpisode(index) {
-            currentEpisodeIndex = index; 
-            const episode = episodes[index];
-            currentSceneId = episode.scenes[0].id; 
-            displayScene(episode, currentSceneId); 
+function loadEpisode(episodeId) {
+    const episodeIndex = episodes.findIndex(ep => ep.title.toLowerCase() === episodeId.toLowerCase());
+    if (episodeIndex !== -1) {
+        const episode = episodes[episodeIndex];
+        currentEpisodeIndex = episodeIndex; 
+        currentSceneId = episode.scenes[0].id; // Start with the first scene of the new episode
+        displayScene(episode, currentSceneId); 
+    } else {
+        console.error('Episode not found:', episodeId);
+        document.getElementById('episodeContent').innerText = 'Episode not found. Please try again later.';
+    }
+}
+
+
+function displayScene(episode, sceneId) {
+    const episodeContent = document.getElementById('episodeContent');
+    const scene = episode.scenes.find(s => s.id === sceneId);
+    
+    if (scene) {
+        let content = `<h2>${episode.title}</h2><p>${scene.text}</p>`;
+        
+        if (scene.choices && scene.choices.length > 0) {
+            content += scene.choices.map(choice => 
+                `<button class="choice-button" data-next-scene="${choice.nextScene}">${choice.text}</button>`
+            ).join('');
+        } else if (scene.nextEpisode) {
+            content += `<button class="next-button" data-next-episode="${scene.nextEpisode}">Next Episode</button>`;
+        } else if (scene.nextScene) {
+            content += `<button class="next-button" data-next-scene="${scene.nextScene}">Next</button>`;
         }
 
-        function displayScene(episode, sceneId) {
-            const episodeContent = document.getElementById('episodeContent');
-            const scene = episode.scenes.find(s => s.id === sceneId);
-            
-            if (scene) {
-                let content = `<h2>${episode.title}</h2><p>${scene.text}</p>`;
-                
-                if (scene.choices && scene.choices.length > 0) {
-                    content += scene.choices.map(choice => 
-                        `<button class="choice-button" data-next-scene="${choice.nextScene}">${choice.text}</button>`
-                    ).join('');
-                } else if (scene.nextScene) {
-                    content += `<button class="next-button" data-next-scene="${scene.nextScene}">Next</button>`;
+        episodeContent.innerHTML = content;
+
+        // Event delegation for buttons
+        episodeContent.addEventListener('click', (event) => {
+            if (event.target.classList.contains('choice-button')) {
+                loadScene(event.target.getAttribute('data-next-scene'));
+            } else if (event.target.classList.contains('next-button')) {
+                const nextScene = event.target.getAttribute('data-next-scene');
+                const nextEpisode = event.target.getAttribute('data-next-episode');
+
+                if (nextEpisode) {
+                    loadEpisode(nextEpisode); // Load the next episode
+                } else if (nextScene) {
+                    loadScene(nextScene); // Load the next scene
                 }
-
-                episodeContent.innerHTML = content;
-
-                // Event delegation for buttons
-                episodeContent.addEventListener('click', (event) => {
-                    if (event.target.classList.contains('choice-button')) {
-                        loadScene(event.target.getAttribute('data-next-scene'));
-                    } else if (event.target.classList.contains('next-button')) {
-                        loadScene(event.target.getAttribute('data-next-scene'));
-                    }
-                });
             }
-        }
+        });
+    } else {
+        episodeContent.innerHTML = `<p>Scene not found. Please check the episode structure.</p>`;
+    }
+}
+
 
         function loadScene(sceneId) {
             const episode = episodes[currentEpisodeIndex];
