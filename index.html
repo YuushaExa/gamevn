@@ -95,8 +95,15 @@ function parseRPY(data) {
             while ((choiceMatch = choiceRegex.exec(sceneMatch[2])) !== null) {
                 scene.choices.push({
                     text: choiceMatch[1],
-                    nextScene: choiceMatch[2]
+                    nextScene: choiceMatch[2] // This will be the scene to jump to
                 });
+            }
+
+            // If there are no choices, check for a nextScene
+            const nextSceneRegex = /jump (scene\d+)/g;
+            let nextSceneMatch;
+            if ((nextSceneMatch = nextSceneRegex.exec(sceneMatch[2])) !== null) {
+                scene.nextScene = nextSceneMatch[1]; // Capture the next scene if it exists
             }
 
             episode.scenes.push(scene);
@@ -107,6 +114,7 @@ function parseRPY(data) {
 
     return episodes;
 }
+
 
 
 
