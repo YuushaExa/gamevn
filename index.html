@@ -84,9 +84,17 @@ function parseRPY(data) {
         while ((sceneMatch = sceneRegex.exec(match[2])) !== null) {
             const scene = {
                 id: sceneMatch[1],
-                text: sceneMatch[2].trim(),
+                text: [],
                 choices: []
             };
+
+            // Extract dialogue text from the scene
+            const dialogueRegex = /"([^"]+)"/g;
+            let dialogueMatch;
+
+            while ((dialogueMatch = dialogueRegex.exec(sceneMatch[2])) !== null) {
+                scene.text.push(dialogueMatch[1]); // Store only the text within quotes
+            }
 
             // Extract choices from the scene text
             const choiceRegex = /"([^"]+)":\s*jump (scene\d+)/g;
@@ -95,15 +103,8 @@ function parseRPY(data) {
             while ((choiceMatch = choiceRegex.exec(sceneMatch[2])) !== null) {
                 scene.choices.push({
                     text: choiceMatch[1],
-                    nextScene: choiceMatch[2] // This will be the scene to jump to
+                    nextScene: choiceMatch[2]
                 });
-            }
-
-            // If there are no choices, check for a nextScene
-            const nextSceneRegex = /jump (scene\d+)/g;
-            let nextSceneMatch;
-            if ((nextSceneMatch = nextSceneRegex.exec(sceneMatch[2])) !== null) {
-                scene.nextScene = nextSceneMatch[1]; // Capture the next scene if it exists
             }
 
             episode.scenes.push(scene);
@@ -114,6 +115,7 @@ function parseRPY(data) {
 
     return episodes;
 }
+
 
 
 
@@ -152,17 +154,16 @@ function displayScene(episode, sceneId) {
     const scene = episode.scenes.find(s => s.id === sceneId);
     
     if (scene) {
-        let content = `<h2>${episode.title}</h2><p>${scene.text}</p>`;
+        let content = `<h2>${episode.title}</h2>`;
         
+        // Render only the dialogue text
+        content += scene.text.map(line => `<p>${line}</p>`).join('');
+
         // Check if there are choices to display
         if (scene.choices && scene.choices.length > 0) {
             content += scene.choices.map(choice => 
                 `<button class="choice-button" data-next-scene="${choice.nextScene}">${choice.text}</button>`
             ).join('');
-        } else if (scene.nextEpisode) {
-            content += `<button class="next-button" data-next-episode="${scene.nextEpisode}">Next Episode</button>`;
-        } else if (scene.nextScene) {
-            content += `<button class="next-button" data-next-scene="${scene.nextScene}">Next</button>`;
         }
 
         episodeContent.innerHTML = content;
@@ -171,21 +172,13 @@ function displayScene(episode, sceneId) {
         episodeContent.addEventListener('click', (event) => {
             if (event.target.classList.contains('choice-button')) {
                 loadScene(event.target.getAttribute('data-next-scene'));
-            } else if (event.target.classList.contains('next-button')) {
-                const nextScene = event.target.getAttribute('data-next-scene');
-                const nextEpisode = event.target.getAttribute('data-next-episode');
-
-                if (nextEpisode) {
-                    loadEpisode(nextEpisode); // Load the next episode
-                } else if (nextScene) {
-                    loadScene(nextScene); // Load the next scene
-                }
             }
         });
     } else {
         episodeContent.innerHTML = `<p>Scene not found. Please check the episode structure.</p>`;
     }
 }
+
 
 
 
