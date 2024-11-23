@@ -1,4 +1,4 @@
-label scene1:
+label episode1:
     "You wake up in a strange place."
     menu:
         "Look around.":
