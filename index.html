@@ -81,7 +81,7 @@ function parseRPY(data) {
         const sceneRegex = /label (scene\d+):([\s\S]*?)(?=label scene\d+:|$)/g;
         let sceneMatch;
 
-        while ((sceneMatch = sceneRegex.exec(match[2])) !== null) {
+        while ((sceneMatch = sceneRegex.exec(match[0])) !== null) {
             const scene = {
                 id: sceneMatch[1],
                 text: [],
@@ -92,7 +92,7 @@ function parseRPY(data) {
             const dialogueRegex = /"([^"]+)"/g;
             let dialogueMatch;
 
-            while ((dialogueMatch = dialogueRegex.exec(sceneMatch[2])) !== null) {
+            while ((dialogueMatch = dialogueRegex.exec(sceneMatch[0])) !== null) {
                 scene.text.push(dialogueMatch[1]); // Store only the text within quotes
             }
 
