@@ -1,4 +1,4 @@
-label episode1:
+label Test:
 label scene1:
     "You wake up in a strange place."
     menu:
