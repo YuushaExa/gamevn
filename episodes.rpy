@@ -1,4 +1,5 @@
 label episode1:
+label scene1:
     "You wake up in a strange place."
     menu:
         "Look around.":
@@ -27,6 +28,7 @@ label scene5:
     jump episode2
 
 label episode2:
+    label scene1:
     "You step out of the door and into the unknown."
     menu:
         "Take a left turn.":
