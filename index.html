@@ -99,13 +99,6 @@ function parseRPY(data) {
                 });
             }
 
-            // Check for next episode transition
-            const nextEpisodeRegex = /jump episode(\d+)/g;
-            let nextEpisodeMatch;
-            if ((nextEpisodeMatch = nextEpisodeRegex.exec(sceneMatch[2])) !== null) {
-                scene.nextEpisode = `episode${nextEpisodeMatch[1]}`;
-            }
-
             episode.scenes.push(scene);
         }
 
@@ -143,7 +136,6 @@ function loadEpisode(index) {
         document.getElementById('episodeContent').innerText = 'Episode not found. Please try again later.';
     }
 }
-
 
 
 
@@ -186,6 +178,7 @@ function displayScene(episode, sceneId) {
         episodeContent.innerHTML = `<p>Scene not found. Please check the episode structure.</p>`;
     }
 }
+
 
 
 
