@@ -100,7 +100,7 @@ function parseRPY(data) {
             const choiceRegex = /"([^"]+)":\s*jump (scene\d+)/g;
             let choiceMatch;
 
-            while ((choiceMatch = choiceRegex.exec(sceneMatch[2])) !== null) {
+            while ((choiceMatch = choiceRegex.exec(sceneMatch[0])) !== null) {
                 scene.choices.push({
                     text: choiceMatch[1],
                     nextScene: choiceMatch[2]
