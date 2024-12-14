@@ -1,193 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Novel Episodes</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .episode-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .episode-list li {
-            margin: 10px 0;
-        }
-        .episode-list a {
-            text-decoration: none;
-            color: #007BFF;
-        }
-        #episodeContent {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-        }
-        button.choice-button {
-            color: darkred;
-        }
-        button.next-button {
-            color: green;
-        }
-    </style>
+    <title>Visual Novel</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Visual Novel Episodes</h1>
-    <ul class="episode-list" id="episodeList"></ul>
-    <div id="episodeContent"></div>
+    <div id="game-container">
+        <div id="background"></div>
+        <div id="character"></div>
+        <div id="text-box">
+            <div id="name-box"></div>
+            <div id="dialogue-box"></div>
+        </div>
+        <button id="next-button">Next</button>
+    </div>
 
+    <script src="engine.js"></script>
     <script>
-        let episodes = [];
-        let currentSceneId = null; 
-        let currentEpisodeIndex = null; 
-
-        // Load the RPY file
-        fetch('episodes.rpy')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text(); // Read as text
-            })
-            .then(data => {
-                episodes = parseRPY(data); // Parse the RPY data
-                displayEpisodeList();
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-                document.getElementById('episodeContent').innerText = 'Failed to load episodes. Please try again later.';
-            });
-
-function parseRPY(data) {
-    const episodes = [];
-    const episodeRegex = /label episode(\d+):([\s\S]*?)(?=label episode\d+:|$)/g;
-    let match;
-
-    while ((match = episodeRegex.exec(data)) !== null) {
-        const episode = {
-            episode: match[1],
-            title: `Episode ${match[1]}`,
-            scenes: []
+        // Initialize the engine when the page loads
+        window.onload = () => {
+            const engine = new VisualNovelEngine('my_visual_novel.json');
+            engine.start();
         };
-
-        const sceneRegex = /label (scene\d+):([\s\S]*?)(?=label scene\d+:|$)/g;
-        let sceneMatch;
-
-        while ((sceneMatch = sceneRegex.exec(match[0])) !== null) {
-            const scene = {
-                id: sceneMatch[1],
-                text: [],
-                choices: []
-            };
-
-            // Extract dialogue text from the scene
-            const dialogueRegex = /"([^"]+)"/g;
-            let dialogueMatch;
-
-            while ((dialogueMatch = dialogueRegex.exec(sceneMatch[0])) !== null) {
-                scene.text.push(dialogueMatch[1]); // Store only the text within quotes
-            }
-
-            // Extract choices from the scene text
-            const choiceRegex = /"([^"]+)":\s*jump (scene\d+)/g;
-            let choiceMatch;
-
-            while ((choiceMatch = choiceRegex.exec(sceneMatch[0])) !== null) {
-                scene.choices.push({
-                    text: choiceMatch[1],
-                    nextScene: choiceMatch[2]
-                });
-            }
-
-            episode.scenes.push(scene);
-        }
-
-        episodes.push(episode);
-    }
-
-    return episodes;
-}
-
-
-
-
-
-        function displayEpisodeList() {
-            const episodeList = document.getElementById('episodeList');
-            episodeList.innerHTML = episodes.map((episode, index) => 
-                `<li><a href="#" data-index="${index}">Episode ${episode.episode}: ${episode.title}</a></li>`
-            ).join('');
-            episodeList.addEventListener('click', (event) => {
-                if (event.target.tagName === 'A') {
-                    const index = event.target.getAttribute('data-index');
-                    loadEpisode(index);
-                }
-            });
-        }
-
-function loadEpisode(index) {
-    const episodeIndex = parseInt(index, 10); // Convert the index to an integer
-
-    if (episodeIndex >= 0 && episodeIndex < episodes.length) {
-        const episode = episodes[episodeIndex];
-        currentEpisodeIndex = episodeIndex; 
-        currentSceneId = episode.scenes[0].id; // Start with the first scene of the new episode
-        displayScene(episode, currentSceneId); 
-    } else {
-        console.error('Episode not found:', index);
-        document.getElementById('episodeContent').innerText = 'Episode not found. Please try again later.';
-    }
-}
-
-
-
-function displayScene(episode, sceneId) {
-    const episodeContent = document.getElementById('episodeContent');
-    const scene = episode.scenes.find(s => s.id === sceneId);
-    
-    if (scene) {
-        let content = `<h2>${episode.title}</h2>`;
-        
-        // Render only the dialogue text
-        content += scene.text.map(line => `<p>${line}</p>`).join('');
-
-        // Check if there are choices to display
-        if (scene.choices && scene.choices.length > 0) {
-            content += scene.choices.map(choice => 
-                `<button class="choice-button" data-next-scene="${choice.nextScene}">${choice.text}</button>`
-            ).join('');
-        }
-
-        episodeContent.innerHTML = content;
-
-        // Event delegation for buttons
-        episodeContent.addEventListener('click', (event) => {
-            if (event.target.classList.contains('choice-button')) {
-                loadScene(event.target.getAttribute('data-next-scene'));
-            }
-        });
-    } else {
-        episodeContent.innerHTML = `<p>Scene not found. Please check the episode structure.</p>`;
-    }
-}
-
-
-
-
-
-        function loadScene(sceneId) {
-            const episode = episodes[currentEpisodeIndex];
-            currentSceneId = sceneId; 
-            displayScene(episode, sceneId); 
-        }
     </script>
 </body>
 </html>
